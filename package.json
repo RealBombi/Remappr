@@ -37,7 +37,7 @@
     "vite": "^7.3.1"
   },
   "build": {
-    "appId": "com.keybindpro.app",
+    "appId": "com.remappr.app",
     "icon": "assets/icon.ico",
     "productName": "Remappr",
     "directories": {

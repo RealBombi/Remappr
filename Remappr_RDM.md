@@ -138,7 +138,7 @@ The Electron main process and Python backend communicate via stdin/stdout using 
 
 #### 3.7 Config Storage
 - All settings and profiles stored in a JSON file
-- Location: `%APPDATA%/KeyBindPro/config.json`
+- Location: `%APPDATA%/Remappr/config.json`
 - Example config structure:
 
 ```json
@@ -268,7 +268,7 @@ The Electron main process and Python backend communicate via stdin/stdout using 
 │                                │
 │  About                         │
 │  Remappr v1.0.0            │
-│  github.com/yourname/keybindpro│
+│  github.com/RealBombi/Remappr  │
 │                                │
 │           [ Save ]             │
 └────────────────────────────────┘
@@ -475,7 +475,7 @@ npm run build
 ### electron-builder.yml
 
 ```yaml
-appId: com.keybindpro.app
+appId: com.remappr.app
 productName: Remappr
 directories:
   output: dist
