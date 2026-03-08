@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(pip install:*)",
+      "Bash(python:*)",
+      "Bash(pip uninstall:*)",
+      "Bash(pip show:*)",
+      "Bash(pyinstaller:*)",
+      "Bash(npm run dist:*)",
+      "Bash(ls:*)",
+      "Bash(magick:*)",
+      "Bash(convert:*)",
+      "Bash(powershell -Command \"reg add ''HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\AppModelUnlock'' /t REG_DWORD /f /v AllowDevelopmentWithoutDevLicense /d 1\")",
+      "Bash(git -C \"E:/MyStuff/Vibe Code/KeyBindPro\" status)",
+      "Bash(gh auth status:*)",
+      "Bash(git --version:*)",
+      "Bash(winget install:*)",
+      "Bash(export PATH=\"$PATH:/c/Program Files/GitHub CLI:/c/Program Files \\(x86\\)/GitHub CLI\")",
+      "Bash(gh:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}
