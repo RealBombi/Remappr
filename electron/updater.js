@@ -36,7 +36,7 @@ function initAutoUpdater(mainWindow) {
       detail: 'Restart the app to apply the update.'
     });
     if (result.response === 0) {
-      autoUpdater.quitAndInstall();
+      autoUpdater.quitAndInstall(true, true);
     }
   });
 

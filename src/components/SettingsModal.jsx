@@ -1,7 +1,21 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Settings as SettingsIcon } from 'lucide-react';
+import { getLaunchAtLogin, setLaunchAtLogin } from '../utils/ipc';
 
 export default function SettingsModal({ isOpen, onClose, settings, onUpdateSettings, appVersion }) {
+    const [launchAtLogin, setLaunchAtLoginState] = useState(false);
+
+    useEffect(() => {
+        if (isOpen) {
+            getLaunchAtLogin().then(setLaunchAtLoginState);
+        }
+    }, [isOpen]);
+
+    const toggleLaunchAtLogin = async (enabled) => {
+        const result = await setLaunchAtLogin(enabled);
+        setLaunchAtLoginState(result);
+    };
+
     if (!isOpen) return null;
 
     return (
@@ -61,6 +75,29 @@ export default function SettingsModal({ isOpen, onClose, settings, onUpdateSetti
                                     tabIndex={-1}
                                     checked={settings.minimizeToTray}
                                     onChange={(e) => onUpdateSettings({ minimizeToTray: e.target.checked })}
+                                    className="sr-only peer toggle-checkbox"
+                                />
+                                <div className="w-9 h-5 bg-zinc-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary transition-colors"></div>
+                            </div>
+                        </label>
+
+                        <label
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    toggleLaunchAtLogin(!launchAtLogin);
+                                }
+                            }}
+                            className="flex items-center justify-between cursor-pointer group p-3 -mx-3 rounded-lg hover:bg-white/5 transition-colors focus-visible-ring"
+                        >
+                            <span className="text-sm font-medium text-zinc-300 group-hover:text-white transition-colors">Launch on Windows startup (in tray)</span>
+                            <div className="relative inline-flex items-center">
+                                <input
+                                    type="checkbox"
+                                    tabIndex={-1}
+                                    checked={launchAtLogin}
+                                    onChange={(e) => toggleLaunchAtLogin(e.target.checked)}
                                     className="sr-only peer toggle-checkbox"
                                 />
                                 <div className="w-9 h-5 bg-zinc-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary transition-colors"></div>

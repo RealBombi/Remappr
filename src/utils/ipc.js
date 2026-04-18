@@ -62,3 +62,17 @@ export async function getAppVersion() {
     }
     return 'dev';
 }
+
+export async function getLaunchAtLogin() {
+    if (ipcRenderer) {
+        return await ipcRenderer.invoke('get-launch-at-login');
+    }
+    return false;
+}
+
+export async function setLaunchAtLogin(enabled) {
+    if (ipcRenderer) {
+        return await ipcRenderer.invoke('set-launch-at-login', enabled);
+    }
+    return false;
+}

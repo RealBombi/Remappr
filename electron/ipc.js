@@ -32,6 +32,18 @@ function setupIPC(mainWindow, pythonBridge) {
 
     ipcMain.handle('get-app-version', () => app.getVersion());
 
+    ipcMain.handle('get-launch-at-login', () => {
+        return app.getLoginItemSettings().openAtLogin;
+    });
+
+    ipcMain.handle('set-launch-at-login', (event, enabled) => {
+        app.setLoginItemSettings({
+            openAtLogin: Boolean(enabled),
+            args: ['--hidden']
+        });
+        return app.getLoginItemSettings().openAtLogin;
+    });
+
     // Config saving functionality
     const configDir = path.join(app.getPath('userData'));
     const configFile = path.join(configDir, 'config.json');

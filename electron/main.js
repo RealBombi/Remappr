@@ -8,6 +8,8 @@ const { initAutoUpdater } = require('./updater');
 let mainWindow;
 let pythonBridge;
 
+const startHidden = process.argv.includes('--hidden');
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 800,
@@ -32,7 +34,9 @@ function createWindow() {
   }
 
   mainWindow.once('ready-to-show', () => {
-    mainWindow.show();
+    if (!startHidden) {
+      mainWindow.show();
+    }
   });
 
   mainWindow.on('close', (event) => {
