@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useController } from './hooks/useController';
 import { useProfiles } from './hooks/useProfiles';
 import { useUIFocus } from './hooks/useUIFocus';
@@ -11,7 +11,7 @@ import SettingsModal from './components/SettingsModal';
 import DisclaimerModal from './components/DisclaimerModal';
 import { Minus, X } from 'lucide-react';
 import appLogo from '../assets/remappr_logo_1_1772933761473.png';
-import { minimizeWindow, closeWindow } from './utils/ipc';
+import { minimizeWindow, closeWindow, getAppVersion } from './utils/ipc';
 
 function App() {
   const {
@@ -42,9 +42,14 @@ function App() {
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [appVersion, setAppVersion] = useState('');
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(
     () => localStorage.getItem('disclaimerAccepted') === 'true'
   );
+
+  useEffect(() => {
+    getAppVersion().then(setAppVersion);
+  }, []);
 
   const handleAcceptDisclaimer = () => {
     localStorage.setItem('disclaimerAccepted', 'true');
@@ -129,7 +134,7 @@ function App() {
         onClose={() => setIsSettingsModalOpen(false)}
         settings={config.settings}
         onUpdateSettings={updateSettings}
-        appVersion="1.0.0"
+        appVersion={appVersion}
       />
 
       {!disclaimerAccepted && (

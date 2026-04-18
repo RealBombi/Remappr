@@ -55,3 +55,10 @@ export async function saveConfig(config) {
     }
     return false;
 }
+
+export async function getAppVersion() {
+    if (ipcRenderer) {
+        return await ipcRenderer.invoke('get-app-version');
+    }
+    return 'dev';
+}

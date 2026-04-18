@@ -3,6 +3,7 @@ const path = require('path');
 const { createTray } = require('./tray');
 const { setupIPC } = require('./ipc');
 const PythonBridge = require('./python-bridge');
+const { initAutoUpdater } = require('./updater');
 
 let mainWindow;
 let pythonBridge;
@@ -76,6 +77,10 @@ if (!gotTheLock) {
       createTray(mainWindow);
     } catch (e) {
       console.warn('Could not create tray icon:', e.message);
+    }
+
+    if (app.isPackaged) {
+      initAutoUpdater(mainWindow);
     }
 
     app.on('activate', () => {

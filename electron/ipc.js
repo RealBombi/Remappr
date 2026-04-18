@@ -30,6 +30,8 @@ function setupIPC(mainWindow, pythonBridge) {
         }
     });
 
+    ipcMain.handle('get-app-version', () => app.getVersion());
+
     // Config saving functionality
     const configDir = path.join(app.getPath('userData'));
     const configFile = path.join(configDir, 'config.json');
