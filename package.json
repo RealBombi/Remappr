@@ -1,7 +1,7 @@
 {
   "name": "remappr",
   "productName": "Remappr",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "electron/main.js",
   "scripts": {
     "dev": "vite",
