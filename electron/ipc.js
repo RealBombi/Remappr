@@ -32,9 +32,15 @@ function setupIPC(mainWindow, pythonBridge) {
 
     ipcMain.handle('get-app-version', () => app.getVersion());
 
+    const LOGIN_ITEM_NAME = 'Remappr';
+
     ipcMain.handle('get-launch-at-login', () => {
         try {
-            return app.getLoginItemSettings().openAtLogin;
+            const settings = app.getLoginItemSettings({
+                name: LOGIN_ITEM_NAME,
+                args: ['--hidden']
+            });
+            return settings.openAtLogin;
         } catch (err) {
             console.error('[login-item] get failed:', err);
             return false;
@@ -45,9 +51,20 @@ function setupIPC(mainWindow, pythonBridge) {
         try {
             app.setLoginItemSettings({
                 openAtLogin: Boolean(enabled),
+                enabled: Boolean(enabled),
+                name: LOGIN_ITEM_NAME,
+                path: process.execPath,
                 args: ['--hidden']
             });
-            return Boolean(enabled);
+            const verify = app.getLoginItemSettings({
+                name: LOGIN_ITEM_NAME,
+                args: ['--hidden']
+            });
+            console.log(`[login-item] set openAtLogin=${enabled}, verified=${verify.openAtLogin}`);
+            if (Boolean(enabled) !== verify.openAtLogin) {
+                throw new Error(`Registry write did not persist (wanted ${enabled}, got ${verify.openAtLogin})`);
+            }
+            return verify.openAtLogin;
         } catch (err) {
             console.error('[login-item] set failed:', err);
             throw err;
