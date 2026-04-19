@@ -14,10 +14,7 @@ export default function SettingsModal({ isOpen, onClose, settings, onUpdateSetti
     const toggleLaunchAtLogin = async (enabled) => {
         setLaunchAtLoginState(enabled);
         try {
-            const result = await setLaunchAtLogin(enabled);
-            if (typeof result === 'boolean') {
-                setLaunchAtLoginState(result);
-            }
+            await setLaunchAtLogin(enabled);
         } catch (err) {
             console.error('Failed to update launch-at-login', err);
             setLaunchAtLoginState(!enabled);

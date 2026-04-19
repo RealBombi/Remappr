@@ -33,15 +33,25 @@ function setupIPC(mainWindow, pythonBridge) {
     ipcMain.handle('get-app-version', () => app.getVersion());
 
     ipcMain.handle('get-launch-at-login', () => {
-        return app.getLoginItemSettings().openAtLogin;
+        try {
+            return app.getLoginItemSettings().openAtLogin;
+        } catch (err) {
+            console.error('[login-item] get failed:', err);
+            return false;
+        }
     });
 
     ipcMain.handle('set-launch-at-login', (event, enabled) => {
-        app.setLoginItemSettings({
-            openAtLogin: Boolean(enabled),
-            args: ['--hidden']
-        });
-        return app.getLoginItemSettings().openAtLogin;
+        try {
+            app.setLoginItemSettings({
+                openAtLogin: Boolean(enabled),
+                args: ['--hidden']
+            });
+            return Boolean(enabled);
+        } catch (err) {
+            console.error('[login-item] set failed:', err);
+            throw err;
+        }
     });
 
     // Config saving functionality
