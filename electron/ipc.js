@@ -1,7 +1,42 @@
 const { ipcMain, dialog, BrowserWindow } = require('electron');
+const { execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const { app } = require('electron');
+
+const RUN_KEY = 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run';
+const RUN_VALUE = 'Remappr';
+
+function queryRunEntry() {
+    try {
+        execFileSync('reg', ['query', RUN_KEY, '/v', RUN_VALUE], {
+            stdio: 'pipe',
+            windowsHide: true
+        });
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+function writeRunEntry(enabled) {
+    if (enabled) {
+        const data = `"${process.execPath}" --hidden`;
+        execFileSync('reg', ['add', RUN_KEY, '/v', RUN_VALUE, '/t', 'REG_SZ', '/d', data, '/f'], {
+            stdio: 'pipe',
+            windowsHide: true
+        });
+    } else {
+        try {
+            execFileSync('reg', ['delete', RUN_KEY, '/v', RUN_VALUE, '/f'], {
+                stdio: 'pipe',
+                windowsHide: true
+            });
+        } catch {
+            // value didn't exist — fine
+        }
+    }
+}
 
 let pythonBridgeRef = null;
 
@@ -32,15 +67,9 @@ function setupIPC(mainWindow, pythonBridge) {
 
     ipcMain.handle('get-app-version', () => app.getVersion());
 
-    const LOGIN_ITEM_NAME = 'Remappr';
-
     ipcMain.handle('get-launch-at-login', () => {
         try {
-            const settings = app.getLoginItemSettings({
-                name: LOGIN_ITEM_NAME,
-                args: ['--hidden']
-            });
-            return settings.openAtLogin;
+            return queryRunEntry();
         } catch (err) {
             console.error('[login-item] get failed:', err);
             return false;
@@ -49,25 +78,16 @@ function setupIPC(mainWindow, pythonBridge) {
 
     ipcMain.handle('set-launch-at-login', (event, enabled) => {
         try {
-            app.setLoginItemSettings({
-                openAtLogin: Boolean(enabled),
-                enabled: Boolean(enabled),
-                name: LOGIN_ITEM_NAME,
-                path: process.execPath,
-                args: ['--hidden']
-            });
-            const verify = app.getLoginItemSettings({
-                name: LOGIN_ITEM_NAME,
-                args: ['--hidden']
-            });
-            console.log(`[login-item] set openAtLogin=${enabled}, verified=${verify.openAtLogin}`);
-            if (Boolean(enabled) !== verify.openAtLogin) {
-                throw new Error(`Registry write did not persist (wanted ${enabled}, got ${verify.openAtLogin})`);
+            writeRunEntry(Boolean(enabled));
+            const verify = queryRunEntry();
+            console.log(`[login-item] set openAtLogin=${enabled}, verified=${verify}`);
+            if (Boolean(enabled) !== verify) {
+                throw new Error(`Registry write did not persist (wanted ${enabled}, got ${verify})`);
             }
-            return verify.openAtLogin;
+            return verify;
         } catch (err) {
             console.error('[login-item] set failed:', err);
-            throw err;
+            throw new Error(`Failed to update startup entry: ${err.message || err}`);
         }
     });
 
