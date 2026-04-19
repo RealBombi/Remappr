@@ -7,6 +7,7 @@ export function useController() {
     const [lastButton, setLastButton] = useState(null);
     const [isActive, setIsActive] = useState(true);
     const [activeButton, setActiveButton] = useState(null);
+    const [lastError, setLastError] = useState(null);
 
     useEffect(() => {
         sendCommand({ type: 'check_controller' });
@@ -33,6 +34,8 @@ export function useController() {
                 case 'error':
                     if (event.message === "No controller found") {
                         setIsConnected(false);
+                    } else {
+                        setLastError({ message: event.message, at: Date.now() });
                     }
                     break;
                 default:
@@ -58,6 +61,8 @@ export function useController() {
         }
     };
 
+    const clearError = () => setLastError(null);
+
     return {
         controllerName,
         isConnected,
@@ -65,6 +70,8 @@ export function useController() {
         detectButton,
         isActive,
         toggleActive,
-        activeButton
+        activeButton,
+        lastError,
+        clearError
     };
 }

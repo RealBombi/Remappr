@@ -76,3 +76,17 @@ export async function setLaunchAtLogin(enabled) {
     }
     return false;
 }
+
+export async function exportProfile(profile) {
+    if (ipcRenderer) {
+        return await ipcRenderer.invoke('export-profile', profile);
+    }
+    return false;
+}
+
+export async function importProfile() {
+    if (ipcRenderer) {
+        return await ipcRenderer.invoke('import-profile');
+    }
+    return null;
+}

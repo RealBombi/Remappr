@@ -9,7 +9,7 @@ import MappingList from './components/MappingList';
 import AddMappingModal from './components/AddMappingModal';
 import SettingsModal from './components/SettingsModal';
 import DisclaimerModal from './components/DisclaimerModal';
-import { Minus, X } from 'lucide-react';
+import { Minus, X, AlertTriangle } from 'lucide-react';
 import appLogo from '../assets/remappr_logo_1_1772933761473.png';
 import { minimizeWindow, closeWindow, getAppVersion } from './utils/ipc';
 
@@ -21,8 +21,16 @@ function App() {
     detectButton,
     isActive,
     toggleActive,
-    activeButton
+    activeButton,
+    lastError,
+    clearError
   } = useController();
+
+  useEffect(() => {
+    if (!lastError) return;
+    const timer = setTimeout(clearError, 6000);
+    return () => clearTimeout(timer);
+  }, [lastError, clearError]);
 
   // Initialize global controller UI navigation
   useUIFocus({ activeButton });
@@ -36,6 +44,9 @@ function App() {
     removeMapping,
     toggleMapping,
     createProfile,
+    renameProfile,
+    deleteProfile,
+    importProfileData,
     updateSettings,
     isLoaded
   } = useProfiles();
@@ -104,6 +115,9 @@ function App() {
         activeProfileId={activeProfileId}
         setActiveProfileId={setActiveProfileId}
         onCreateProfile={createProfile}
+        onRenameProfile={renameProfile}
+        onDeleteProfile={deleteProfile}
+        onImportProfile={importProfileData}
         onOpenSettings={() => setIsSettingsModalOpen(true)}
         isActive={isActive}
         onToggleActive={toggleActive}
@@ -136,6 +150,22 @@ function App() {
         onUpdateSettings={updateSettings}
         appVersion={appVersion}
       />
+
+      {lastError && (
+        <div className="fixed bottom-12 left-1/2 -translate-x-1/2 z-40 no-drag animate-slide-up">
+          <div className="flex items-center gap-3 bg-rose-950/95 border border-rose-500/40 shadow-[0_0_20px_rgba(244,63,94,0.25)] rounded-lg px-4 py-2.5 backdrop-blur-sm max-w-[520px]">
+            <AlertTriangle size={16} className="text-rose-400 flex-shrink-0" />
+            <span className="text-sm text-rose-100 leading-snug flex-1 break-words">{lastError.message}</span>
+            <button
+              onClick={clearError}
+              className="text-rose-300 hover:text-white hover:bg-white/10 p-1 rounded transition-colors flex-shrink-0"
+              title="Dismiss"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {!disclaimerAccepted && (
         <DisclaimerModal onAccept={handleAcceptDisclaimer} />

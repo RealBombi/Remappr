@@ -1,4 +1,5 @@
 from pynput.keyboard import Controller, Key
+from protocol import send_message
 
 keyboard = Controller()
 
@@ -28,15 +29,20 @@ for i in range(1, 13):
     KEY_MAP[f"f{i}"] = getattr(Key, f"f{i}")
 
 def press_key(key_name):
+    key = KEY_MAP.get(str(key_name).lower())
+    if key is None:
+        send_message({"type": "error", "message": f"Unknown key mapping: {key_name!r}"})
+        return
     try:
-        key = KEY_MAP.get(key_name.lower(), key_name)
         keyboard.press(key)
     except Exception as e:
-        pass
+        send_message({"type": "error", "message": f"Failed to press {key_name!r}: {e}"})
 
 def release_key(key_name):
+    key = KEY_MAP.get(str(key_name).lower())
+    if key is None:
+        return
     try:
-        key = KEY_MAP.get(key_name.lower(), key_name)
         keyboard.release(key)
     except Exception as e:
-        pass
+        send_message({"type": "error", "message": f"Failed to release {key_name!r}: {e}"})

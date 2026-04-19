@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
+const fs = require('fs');
 const { createTray } = require('./tray');
 const { setupIPC } = require('./ipc');
 const PythonBridge = require('./python-bridge');
@@ -9,6 +10,17 @@ let mainWindow;
 let pythonBridge;
 
 const startHidden = process.argv.includes('--hidden');
+
+function readConfigSettings() {
+  try {
+    const configPath = path.join(app.getPath('userData'), 'config.json');
+    if (!fs.existsSync(configPath)) return {};
+    return JSON.parse(fs.readFileSync(configPath, 'utf-8')).settings || {};
+  } catch (err) {
+    console.error('[main] failed to read config:', err.message);
+    return {};
+  }
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -34,13 +46,16 @@ function createWindow() {
   }
 
   mainWindow.once('ready-to-show', () => {
-    if (!startHidden) {
+    const { startMinimized } = readConfigSettings();
+    if (!startHidden && !startMinimized) {
       mainWindow.show();
     }
   });
 
   mainWindow.on('close', (event) => {
-    if (!app.isQuitting) {
+    if (app.isQuitting) return;
+    const { minimizeToTray = true } = readConfigSettings();
+    if (minimizeToTray) {
       event.preventDefault();
       mainWindow.hide();
     }

@@ -1,4 +1,4 @@
-const { ipcMain } = require('electron');
+const { ipcMain, dialog, BrowserWindow } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const { app } = require('electron');
@@ -84,6 +84,49 @@ function setupIPC(mainWindow, pythonBridge) {
         } catch (err) {
             console.error('Failed to save config', err);
             return false;
+        }
+    });
+
+    ipcMain.handle('export-profile', async (event, profile) => {
+        const win = BrowserWindow.fromWebContents(event.sender);
+        const safeName = String(profile?.name || 'profile').replace(/[\\/:*?"<>|]/g, '_');
+        const result = await dialog.showSaveDialog(win, {
+            title: 'Export Profile',
+            defaultPath: `${safeName}.remappr.json`,
+            filters: [{ name: 'Remappr Profile', extensions: ['json'] }]
+        });
+        if (result.canceled || !result.filePath) return false;
+        try {
+            const payload = {
+                remapprProfile: 1,
+                name: profile.name,
+                mappings: profile.mappings || []
+            };
+            fs.writeFileSync(result.filePath, JSON.stringify(payload, null, 2));
+            return true;
+        } catch (err) {
+            console.error('[export-profile]', err);
+            return false;
+        }
+    });
+
+    ipcMain.handle('import-profile', async (event) => {
+        const win = BrowserWindow.fromWebContents(event.sender);
+        const result = await dialog.showOpenDialog(win, {
+            title: 'Import Profile',
+            filters: [{ name: 'Remappr Profile', extensions: ['json'] }],
+            properties: ['openFile']
+        });
+        if (result.canceled || !result.filePaths?.length) return null;
+        try {
+            const data = JSON.parse(fs.readFileSync(result.filePaths[0], 'utf-8'));
+            if (!data || typeof data.name !== 'string' || !Array.isArray(data.mappings)) {
+                return { error: 'Invalid profile file' };
+            }
+            return { name: data.name, mappings: data.mappings };
+        } catch (err) {
+            console.error('[import-profile]', err);
+            return { error: err.message };
         }
     });
 }
