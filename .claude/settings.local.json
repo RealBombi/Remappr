@@ -22,7 +22,15 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash(git rm:*)",
+      "Bash(npm install *)",
+      "Bash(git check-ignore *)",
+      "Bash(printenv GH_TOKEN)",
+      "Bash(npm run *)",
+      "Bash(tasklist //FI \"IMAGENAME eq Remappr.exe\")",
+      "Bash(tasklist)",
+      "Bash(powershell *)"
     ]
   }
 }

@@ -91,15 +91,13 @@ class ControllerPoller:
         self.connected = True
 
         self._state = XINPUT_STATE()
+        # Start with zeroed previous state so the first poll() picks up
+        # any buttons already held.  This is safer than snapshotting the
+        # current state, which may be stale or transitional after a
+        # micro-disconnect / reconnect.
         self._prev_buttons = 0
         self._prev_lt = False
         self._prev_rt = False
-
-        # Read initial state so we don't fire spurious events on first poll
-        if _xinput.XInputGetState(player_index, ctypes.byref(self._state)) == 0:
-            self._prev_buttons = self._state.Gamepad.wButtons
-            self._prev_lt = self._state.Gamepad.bLeftTrigger > TRIGGER_THRESHOLD
-            self._prev_rt = self._state.Gamepad.bRightTrigger > TRIGGER_THRESHOLD
 
     def poll(self):
         result = _xinput.XInputGetState(

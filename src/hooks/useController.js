@@ -56,7 +56,9 @@ export function useController() {
             sendCommand({ type: 'stop' });
             setIsActive(false);
         } else {
-            sendCommand({ type: 'start', mappings: [] });
+            // Don't send mappings here — useProfiles will resync them
+            // via update_mappings once isActive triggers a re-render
+            sendCommand({ type: 'start' });
             setIsActive(true);
         }
     };

@@ -104,8 +104,9 @@ def main():
 
                     if cmd_type == "start":
                         is_mapping_active = True
-                        if "mappings" in cmd:
+                        if "mappings" in cmd and len(cmd["mappings"]) > 0:
                             current_mappings = cmd["mappings"]
+                        send_message({"type": "log", "message": f"Mapping active. {len(current_mappings)} binding(s) loaded."})
 
                     elif cmd_type == "stop":
                         is_mapping_active = False
@@ -118,6 +119,7 @@ def main():
                         if "mappings" in cmd:
                             current_mappings = cmd["mappings"]
                             is_mapping_active = True
+                            send_message({"type": "log", "message": f"Mappings updated: {len(current_mappings)} binding(s)."})
 
                     elif cmd_type == "check_controller":
                         if poller and poller.connected:
@@ -149,6 +151,12 @@ def main():
                         controller_name = name
                         send_message({"type": "controller_connected", "name": name})
                         poller = ControllerPoller(idx, handle_controller_event, on_disconnect)
+                        # Notify frontend so it can resync mappings
+                        send_message({
+                            "type": "controller_reconnected",
+                            "name": name,
+                            "active_bindings": len(current_mappings)
+                        })
 
             time.sleep(0.01)
 

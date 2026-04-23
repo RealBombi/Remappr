@@ -55,6 +55,34 @@ export function useProfiles() {
         }
     }, [mappingsJson, isLoaded]);
 
+    // Re-sync mappings whenever the controller reconnects (e.g. after a
+    // USB micro-disconnect that is common with fight sticks / non-Xbox pads)
+    useEffect(() => {
+        if (!isLoaded) return;
+
+        let ipcRenderer = null;
+        if (window.require) {
+            try {
+                ipcRenderer = window.require('electron').ipcRenderer;
+            } catch (_) { /* not in electron */ }
+        }
+        if (!ipcRenderer) return;
+
+        const handleReconnect = (_event, data) => {
+            if (data?.type === 'controller_reconnected' && activeProfile) {
+                const enabledMappings = activeProfile.mappings.filter(m => m.enabled);
+                console.log('[useProfiles] Controller reconnected — resyncing', enabledMappings.length, 'mapping(s)');
+                sendCommand({
+                    type: 'update_mappings',
+                    mappings: enabledMappings
+                });
+            }
+        };
+
+        ipcRenderer.on('python-event', handleReconnect);
+        return () => ipcRenderer.removeListener('python-event', handleReconnect);
+    }, [mappingsJson, isLoaded]);
+
     const addMapping = (mapping) => {
         setConfig(prev => {
             const profiles = prev.profiles.map(p => {

@@ -14,7 +14,7 @@ Types of import:
 IMPORTANT: Do NOT post this list to the issue-tracker. Use it as a basis for
             tracking down the missing module yourself. Thanks!
 
-missing module named 'collections.abc' - imported by _colorize (top-level), typing (top-level), traceback (top-level), logging (top-level), selectors (top-level), http.client (top-level), importlib.resources.readers (top-level), inspect (top-level), tracemalloc (top-level), pygame.base (top-level), pygame._sdl2.audio (top-level), pygame._sdl2.video (top-level), pygame.color (top-level), pygame.typing (top-level), pygame.rect (top-level), pygame.surface (top-level), pygame.math (top-level), pygame.display (top-level), pygame.font (top-level)
+missing module named 'collections.abc' - imported by tracemalloc (top-level), typing (top-level), traceback (top-level), _colorize (top-level), logging (top-level), selectors (top-level), http.client (top-level), importlib.resources.readers (top-level), inspect (top-level), pygame.base (top-level), pygame._sdl2.audio (top-level), pygame._sdl2.video (top-level), pygame.color (top-level), pygame.typing (top-level), pygame.rect (top-level), pygame.surface (top-level), pygame.math (top-level), pygame.display (top-level), pygame.font (top-level)
 missing module named _scproxy - imported by urllib.request (conditional)
 missing module named posix - imported by posixpath (optional), shutil (conditional), importlib._bootstrap_external (conditional), pathlib._os (optional), os (conditional, optional)
 missing module named resource - imported by posix (top-level)
