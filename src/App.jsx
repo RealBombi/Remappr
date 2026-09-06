@@ -16,6 +16,7 @@ import { minimizeWindow, closeWindow, getAppVersion } from './utils/ipc';
 function App() {
   const {
     controllerName,
+    controllerLayout,
     isConnected,
     lastButton,
     detectButton,
@@ -129,6 +130,7 @@ function App() {
         onDelete={removeMapping}
         onAdd={() => setIsAddModalOpen(true)}
         activeButton={activeButton}
+        controllerLayout={controllerLayout}
       />
 
       <div className="bg-black/80 backdrop-blur-md border-t border-white/5 p-2 text-center text-[11px] font-medium text-zinc-600 no-drag uppercase tracking-widest z-10">
@@ -141,6 +143,7 @@ function App() {
         onSave={addMapping}
         onDetect={detectButton}
         lastDetectedButton={lastButton}
+        controllerLayout={controllerLayout}
       />
 
       <SettingsModal

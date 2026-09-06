@@ -2,7 +2,7 @@ import MappingRow from './MappingRow';
 import { Plus, Gamepad2 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
-export default function MappingList({ mappings, onToggle, onDelete, onAdd, activeButton }) {
+export default function MappingList({ mappings, onToggle, onDelete, onAdd, activeButton, controllerLayout }) {
     return (
         <div className="flex-1 overflow-y-auto p-5 pb-20 flex flex-col">
             {mappings.length === 0 ? (
@@ -43,6 +43,7 @@ export default function MappingList({ mappings, onToggle, onDelete, onAdd, activ
                                     onToggle={onToggle}
                                     onDelete={onDelete}
                                     isActiveButton={activeButton === map.button}
+                                    controllerLayout={controllerLayout}
                                 />
                             ))}
                         </AnimatePresence>

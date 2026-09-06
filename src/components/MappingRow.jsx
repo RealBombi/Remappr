@@ -1,8 +1,11 @@
 import React from 'react';
 import { Trash2, ArrowRight, Play } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { formatButtonLabel } from '../utils/buttonLabels';
 
-export default function MappingRow({ mapping, onToggle, onDelete, isActiveButton }) {
+export default function MappingRow({ mapping, onToggle, onDelete, isActiveButton, controllerLayout }) {
+    const buttonLabel = formatButtonLabel(mapping.button, controllerLayout, mapping.buttonLabel);
+
     return (
         <motion.div
             layout
@@ -32,7 +35,7 @@ export default function MappingRow({ mapping, onToggle, onDelete, isActiveButton
                             ? 'bg-primary/20 text-primary border-primary/30'
                             : 'bg-black/50 text-zinc-300 border-white/5'
                             }`}>
-                            {mapping.buttonLabel || mapping.button}
+                            {buttonLabel}
                         </span>
                     </div>
                 </div>

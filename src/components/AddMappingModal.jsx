@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { X, Gamepad2, Keyboard, CheckCircle2 } from 'lucide-react';
+import { formatButtonLabel } from '../utils/buttonLabels';
 
-export default function AddMappingModal({ isOpen, onClose, onSave, onDetect, lastDetectedButton }) {
+export default function AddMappingModal({ isOpen, onClose, onSave, onDetect, lastDetectedButton, controllerLayout }) {
     const [step, setStep] = useState(1);
     const [button, setButton] = useState(null);
     const [key, setKey] = useState(null);
@@ -38,6 +39,10 @@ export default function AddMappingModal({ isOpen, onClose, onSave, onDetect, las
     }, [step]);
 
     if (!isOpen) return null;
+
+    // Shown while mapping; the profile stores the neutral name so the same
+    // saved mapping can render as CROSS or A depending on the pad in use.
+    const buttonLabel = formatButtonLabel(button, controllerLayout);
 
     const handleSave = () => {
         onSave({
@@ -91,7 +96,7 @@ export default function AddMappingModal({ isOpen, onClose, onSave, onDetect, las
                             </div>
                             <div>
                                 <h3 className="text-lg font-bold text-white mb-1">Keyboard Output</h3>
-                                <p className="text-sm text-zinc-400">Press the key to assign to <span className="text-primary font-mono font-bold bg-primary/20 px-2 py-0.5 rounded ml-1">{button.replace('BTN_', '')}</span></p>
+                                <p className="text-sm text-zinc-400">Press the key to assign to <span className="text-primary font-mono font-bold bg-primary/20 px-2 py-0.5 rounded ml-1">{buttonLabel}</span></p>
                             </div>
                         </div>
                     )}
@@ -102,7 +107,7 @@ export default function AddMappingModal({ isOpen, onClose, onSave, onDetect, las
                                 <CheckCircle2 size={40} />
                             </div>
                             <div className="w-full bg-black/40 border border-white/5 rounded-xl p-4 flex items-center justify-center gap-5 font-mono text-xl shadow-inner">
-                                <span className="text-primary font-bold">{button.replace('BTN_', '')}</span>
+                                <span className="text-primary font-bold">{buttonLabel}</span>
                                 <span className="text-zinc-500 text-sm">→</span>
                                 <span className="text-blue-400 uppercase font-bold text-2xl">{key}</span>
                             </div>

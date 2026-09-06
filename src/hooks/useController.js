@@ -3,6 +3,9 @@ import { onPythonEvent, sendCommand } from '../utils/ipc';
 
 export function useController() {
     const [controllerName, setControllerName] = useState(null);
+    // Keeps its last value while disconnected so labels don't flip to Xbox
+    // names the moment a DualSense is unplugged.
+    const [controllerLayout, setControllerLayout] = useState('xbox');
     const [isConnected, setIsConnected] = useState(false);
     const [lastButton, setLastButton] = useState(null);
     const [isActive, setIsActive] = useState(true);
@@ -16,6 +19,7 @@ export function useController() {
             switch (event.type) {
                 case 'controller_connected':
                     setControllerName(event.name);
+                    setControllerLayout(event.layout || 'xbox');
                     setIsConnected(true);
                     break;
                 case 'controller_disconnected':
@@ -67,6 +71,7 @@ export function useController() {
 
     return {
         controllerName,
+        controllerLayout,
         isConnected,
         lastButton,
         detectButton,

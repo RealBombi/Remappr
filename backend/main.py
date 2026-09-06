@@ -10,7 +10,7 @@ os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
 import pygame  # noqa: E402
 from protocol import send_message, read_messages  # noqa: E402
 from keyboard_sender import press_key, release_key  # noqa: E402
-from controller import get_controller, rescan_controller, ControllerPoller  # noqa: E402
+from controller import get_controller, rescan_controller  # noqa: E402
 
 # Global state
 current_mappings = []  # List of {"button": "...", "key": "..."}
@@ -63,8 +63,9 @@ def main():
     stdin_thread = threading.Thread(target=stdin_reader, args=(cmd_queue,), daemon=True)
     stdin_thread.start()
 
-    poller = None          # ControllerPoller when connected
+    poller = None          # XInputPoller / SdlPoller when connected
     controller_name = None
+    controller_layout = "xbox"   # drives the button labels shown in the UI
     rescan_ticks = 0       # counter for periodic controller re-scan
 
     def on_disconnect():
@@ -74,16 +75,34 @@ def main():
         release_all_keys()
         send_message({"type": "controller_disconnected"})
 
-    def try_connect():
-        nonlocal poller, controller_name
-        info = get_controller()
-        if info:
-            idx, name = info
-            controller_name = name
-            send_message({"type": "controller_connected", "name": name})
-            poller = ControllerPoller(idx, handle_controller_event, on_disconnect)
-            return True
-        return False
+    def try_connect(rescan=False, announce_reconnect=False):
+        nonlocal poller, controller_name, controller_layout
+        device = rescan_controller() if rescan else get_controller()
+        if not device:
+            return False
+
+        try:
+            poller = device.open(handle_controller_event, on_disconnect)
+        except Exception as e:
+            send_message({"type": "error", "message": f"Could not open {device.name}: {e}"})
+            return False
+
+        controller_name = device.name
+        controller_layout = device.layout
+        send_message({
+            "type": "controller_connected",
+            "name": device.name,
+            "layout": device.layout
+        })
+        if announce_reconnect:
+            # Notify frontend so it can resync mappings
+            send_message({
+                "type": "controller_reconnected",
+                "name": device.name,
+                "layout": device.layout,
+                "active_bindings": len(current_mappings)
+            })
+        return True
 
     try:
         # Initial controller check
@@ -123,7 +142,11 @@ def main():
 
                     elif cmd_type == "check_controller":
                         if poller and poller.connected:
-                            send_message({"type": "controller_connected", "name": controller_name})
+                            send_message({
+                                "type": "controller_connected",
+                                "name": controller_name,
+                                "layout": controller_layout
+                            })
                         else:
                             if not try_connect():
                                 send_message({"type": "error", "message": "No controller found"})
@@ -145,18 +168,7 @@ def main():
                 rescan_ticks += 1
                 if rescan_ticks >= 100:  # 100 × 10 ms = 1 s
                     rescan_ticks = 0
-                    info = rescan_controller()
-                    if info:
-                        idx, name = info
-                        controller_name = name
-                        send_message({"type": "controller_connected", "name": name})
-                        poller = ControllerPoller(idx, handle_controller_event, on_disconnect)
-                        # Notify frontend so it can resync mappings
-                        send_message({
-                            "type": "controller_reconnected",
-                            "name": name,
-                            "active_bindings": len(current_mappings)
-                        })
+                    try_connect(rescan=True, announce_reconnect=True)
 
             time.sleep(0.01)
 

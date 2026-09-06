@@ -6,11 +6,11 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[],
-    hiddenimports=['pygame', 'pygame.joystick', 'pygame.event', 'pygame._sdl2'],
+    hiddenimports=['pygame', 'pygame.joystick', 'pygame.event', 'pygame._sdl2', 'pygame._sdl2.controller'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=['numpy'],
     noarchive=False,
     optimize=0,
 )

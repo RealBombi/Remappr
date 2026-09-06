@@ -1,0 +1,5 @@
+# pygame-ce bundles SDL, which is what reads non-XInput pads such as the
+# DualSense.  SDL 2.0.16+ is required for the PS5 driver; pygame-ce 2.5 ships
+# well past that.
+pygame-ce>=2.5.0
+pynput>=1.7.0
