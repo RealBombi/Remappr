@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { X, Gamepad2, Keyboard, CheckCircle2 } from 'lucide-react';
 import { formatButtonLabel } from '../utils/buttonLabels';
+import { labelForKeyEvent } from '../utils/keyLabels';
+import { DEFAULT_TURBO } from '../utils/turbo';
 
 export default function AddMappingModal({ isOpen, onClose, onSave, onDetect, lastDetectedButton, controllerLayout }) {
     const [step, setStep] = useState(1);
     const [button, setButton] = useState(null);
     const [key, setKey] = useState(null);
+    const [keyLabel, setKeyLabel] = useState(null);
 
     useEffect(() => {
         if (isOpen) {
             setStep(1);
             setButton(null);
             setKey(null);
+            setKeyLabel(null);
             onDetect();
         }
     }, [isOpen]);
@@ -27,7 +31,12 @@ export default function AddMappingModal({ isOpen, onClose, onSave, onDetect, las
         const handleKeyDown = (e) => {
             if (step === 2) {
                 e.preventDefault();
-                setKey(e.key.toLowerCase());
+                // Store the physical key (e.code) so games that read key
+                // positions see the key the user actually pressed, whatever
+                // keyboard layout they use.  Fall back to the character only
+                // when the browser gives no code.
+                setKey(e.code || e.key.toLowerCase());
+                setKeyLabel(labelForKeyEvent(e));
                 setStep(3);
             }
         };
@@ -50,8 +59,9 @@ export default function AddMappingModal({ isOpen, onClose, onSave, onDetect, las
             button,
             buttonLabel: button.replace('BTN_', ''),
             key,
-            keyLabel: key.toUpperCase(),
-            enabled: true
+            keyLabel: keyLabel || key.toUpperCase(),
+            enabled: true,
+            turbo: { ...DEFAULT_TURBO }
         });
         onClose();
     };
@@ -109,7 +119,7 @@ export default function AddMappingModal({ isOpen, onClose, onSave, onDetect, las
                             <div className="w-full bg-black/40 border border-white/5 rounded-xl p-4 flex items-center justify-center gap-5 font-mono text-xl shadow-inner">
                                 <span className="text-primary font-bold">{buttonLabel}</span>
                                 <span className="text-zinc-500 text-sm">→</span>
-                                <span className="text-blue-400 uppercase font-bold text-2xl">{key}</span>
+                                <span className="text-blue-400 uppercase font-bold text-2xl">{keyLabel || key}</span>
                             </div>
                             <p className="text-sm font-medium text-emerald-400/80 tracking-wide">Configuration Ready</p>
                         </div>
