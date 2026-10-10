@@ -1,4 +1,4 @@
-const { ipcMain, dialog, BrowserWindow } = require('electron');
+const { ipcMain, dialog, BrowserWindow, shell } = require('electron');
 const { execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
@@ -66,6 +66,20 @@ function setupIPC(mainWindow, pythonBridge) {
     });
 
     ipcMain.handle('get-app-version', () => app.getVersion());
+
+    // Launch the ViGEmBus driver installer that the backend ships.  Windows
+    // Installer shows its own UI and UAC prompt; we only hand it the file.
+    ipcMain.handle('install-driver', async (event, installerPath) => {
+        try {
+            if (!installerPath || !fs.existsSync(installerPath) || !installerPath.toLowerCase().endsWith('.msi')) {
+                return { ok: false, error: 'Driver installer not found' };
+            }
+            const result = await shell.openPath(installerPath);
+            return result ? { ok: false, error: result } : { ok: true };
+        } catch (err) {
+            return { ok: false, error: String(err) };
+        }
+    });
 
     ipcMain.handle('get-launch-at-login', () => {
         try {

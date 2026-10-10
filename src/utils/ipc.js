@@ -77,6 +77,13 @@ export async function setLaunchAtLogin(enabled) {
     return false;
 }
 
+export async function installDriver(installerPath) {
+    if (ipcRenderer) {
+        return await ipcRenderer.invoke('install-driver', installerPath);
+    }
+    return { ok: false, error: 'Not running in Electron' };
+}
+
 export async function exportProfile(profile) {
     if (ipcRenderer) {
         return await ipcRenderer.invoke('export-profile', profile);

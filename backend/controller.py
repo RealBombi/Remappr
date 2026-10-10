@@ -303,6 +303,23 @@ class XInputPoller:
         self._prev_lt = False
         self._prev_rt = False
 
+    def get_state(self):
+        """Full pad state for controller emulation.
+
+        Sticks are XInput int16 (positive = up / right), triggers 0..255.
+        """
+        gp = self._state.Gamepad
+        btns = gp.wButtons
+        buttons = {name: bool(btns & mask) for mask, name in XINPUT_BUTTONS}
+        buttons["BTN_LT"] = self._prev_lt
+        buttons["BTN_RT"] = self._prev_rt
+        return {
+            "buttons": buttons,
+            "lt": gp.bLeftTrigger, "rt": gp.bRightTrigger,
+            "lx": gp.sThumbLX, "ly": gp.sThumbLY,
+            "rx": gp.sThumbRX, "ry": gp.sThumbRY,
+        }
+
     def poll(self):
         result = _xinput.XInputGetState(
             self.player_index, ctypes.byref(self._state)
@@ -353,6 +370,15 @@ class SdlPoller:
         self._prev = {name: False for _, name in self._buttons}
         self._prev_lt = False
         self._prev_rt = False
+        self._state = dict(buttons={}, lt=0, rt=0, lx=0, ly=0, rx=0, ry=0)
+
+    def get_state(self):
+        """Full pad state in the same shape as XInputPoller.get_state."""
+        return self._state
+
+    @staticmethod
+    def _clamp16(v):
+        return max(-32768, min(32767, int(v)))
 
     def poll(self):
         # SDL only refreshes pad state while the event queue is pumped, and
@@ -391,6 +417,25 @@ class SdlPoller:
         if rt_pressed != self._prev_rt:
             self._prev_rt = rt_pressed
             self.on_event("BTN_RT", rt_pressed)
+
+        # ── Full state snapshot (for emulation) ──
+        # SDL's Y axes point down; XInput's point up, which is the shape the
+        # virtual pad expects.  Triggers go from SDL 0..32767 to 0..255.
+        try:
+            buttons = dict(self._prev)
+            buttons["BTN_LT"] = lt_pressed
+            buttons["BTN_RT"] = rt_pressed
+            self._state = {
+                "buttons": buttons,
+                "lt": max(0, self._pad.get_axis(pygame.CONTROLLER_AXIS_TRIGGERLEFT)) * 255 // 32767,
+                "rt": max(0, self._pad.get_axis(pygame.CONTROLLER_AXIS_TRIGGERRIGHT)) * 255 // 32767,
+                "lx": self._clamp16(self._pad.get_axis(pygame.CONTROLLER_AXIS_LEFTX)),
+                "ly": self._clamp16(-self._pad.get_axis(pygame.CONTROLLER_AXIS_LEFTY)),
+                "rx": self._clamp16(self._pad.get_axis(pygame.CONTROLLER_AXIS_RIGHTX)),
+                "ry": self._clamp16(-self._pad.get_axis(pygame.CONTROLLER_AXIS_RIGHTY)),
+            }
+        except Exception:
+            pass
 
     def _close(self):
         """Release the SDL handle so a reconnect can claim the pad again."""

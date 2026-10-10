@@ -11,9 +11,14 @@ export function useController() {
     const [isActive, setIsActive] = useState(true);
     const [activeButton, setActiveButton] = useState(null);
     const [lastError, setLastError] = useState(null);
+    // Controller emulation (virtual Xbox 360 / DualShock 4 via ViGEmBus)
+    const [emulation, setEmulation] = useState({
+        mode: 'off', active: false, driverInstalled: null, installer: null, error: null
+    });
 
     useEffect(() => {
         sendCommand({ type: 'check_controller' });
+        sendCommand({ type: 'check_emulation' });
 
         const unsubscribe = onPythonEvent((event) => {
             switch (event.type) {
@@ -34,6 +39,18 @@ export function useController() {
                     break;
                 case 'button_released':
                     setActiveButton(prev => prev === event.button ? null : prev);
+                    break;
+                case 'emulation_status':
+                    setEmulation({
+                        mode: event.mode || 'off',
+                        active: !!event.active,
+                        driverInstalled: !!event.driver_installed,
+                        installer: event.installer || null,
+                        error: event.error || null
+                    });
+                    if (event.error) {
+                        setLastError({ message: event.error, at: Date.now() });
+                    }
                     break;
                 case 'error':
                     if (event.message === "No controller found") {
@@ -69,7 +86,17 @@ export function useController() {
 
     const clearError = () => setLastError(null);
 
+    const setEmulationMode = (mode) => {
+        setEmulation(prev => ({ ...prev, mode, error: null }));
+        sendCommand({ type: 'set_emulation', mode });
+    };
+
+    const refreshEmulation = () => sendCommand({ type: 'check_emulation' });
+
     return {
+        emulation,
+        setEmulationMode,
+        refreshEmulation,
         controllerName,
         controllerLayout,
         isConnected,

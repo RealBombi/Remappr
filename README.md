@@ -18,6 +18,9 @@ Remappr is a lightweight Windows app that lets you map controller buttons to key
 - Profiles are controller-agnostic, so one made on an Xbox pad works on a DualSense and back again
 - Create multiple profiles for different games or setups
 - Enable/disable individual mappings without deleting them
+- Controller emulation: make a PS4/PS5 pad show up to Steam and games as an Xbox 360 controller (or any pad as a DualShock 4) for games that only accept Xbox input, such as GTA V. Needs the free ViGEmBus driver, which the app offers to install
+- Turbo / hold-to-repeat per mapping: hold a button and the key is tapped on a timer (default 80 ms), with start/end delays, a toggle mode and an interruptable option
+- Works on any keyboard layout: mappings are stored by physical key, so Ø on a Norwegian keyboard reaches the game as the key it expects
 - Runs in the system tray so it stays out of your way
 - Clean UI to manage everything
 
@@ -33,7 +36,7 @@ Remappr has two parts:
 
 1. **Frontend (Electron + React)** — The app window where you manage your profiles and button mappings. Built with React and TailwindCSS, packaged as a desktop app with Electron.
 
-2. **Backend (Python)** — A background process that does the actual work. It reads Xbox pads through the Windows XInput API (the same API games use), and everything Windows won't route through XInput — the DualSense included — through SDL, which talks to those pads directly over USB and Bluetooth. Key presses are simulated with `pynput`. The frontend and backend talk to each other over a local bridge.
+2. **Backend (Python)** — A background process that does the actual work. It reads Xbox pads through the Windows XInput API (the same API games use), and everything Windows won't route through XInput — the DualSense included — through SDL, which talks to those pads directly over USB and Bluetooth. Key presses are injected through the Windows `SendInput` API by physical key position (scancode), so a mapping recorded on a Norwegian, German or any other layout triggers the same key the game expects. The frontend and backend talk to each other over a local bridge.
 
 **The flow:**
 1. You plug in your controller
