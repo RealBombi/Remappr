@@ -24,7 +24,10 @@ function App() {
     toggleActive,
     activeButton,
     lastError,
-    clearError
+    clearError,
+    emulation,
+    setEmulationMode,
+    refreshEmulation
   } = useController();
 
   useEffect(() => {
@@ -44,6 +47,7 @@ function App() {
     addMapping,
     removeMapping,
     toggleMapping,
+    updateMapping,
     createProfile,
     renameProfile,
     deleteProfile,
@@ -51,6 +55,17 @@ function App() {
     updateSettings,
     isLoaded
   } = useProfiles();
+
+  // Apply the saved emulation mode once config is loaded, and again whenever
+  // the user changes it.
+  const savedEmulation = config.settings?.emulation || 'off';
+  useEffect(() => {
+    if (!isLoaded) return;
+    setEmulationMode(savedEmulation);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoaded, savedEmulation]);
+
+  const handleEmulationChange = (mode) => updateSettings({ emulation: mode });
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -109,6 +124,10 @@ function App() {
         isConnected={isConnected}
         controllerName={controllerName}
         activeButton={activeButton}
+        emulation={emulation}
+        emulationMode={savedEmulation}
+        onEmulationChange={handleEmulationChange}
+        onRefreshEmulation={refreshEmulation}
       />
 
       <ProfileSelector
@@ -128,6 +147,7 @@ function App() {
         mappings={activeProfile?.mappings || []}
         onToggle={toggleMapping}
         onDelete={removeMapping}
+        onUpdate={updateMapping}
         onAdd={() => setIsAddModalOpen(true)}
         activeButton={activeButton}
         controllerLayout={controllerLayout}

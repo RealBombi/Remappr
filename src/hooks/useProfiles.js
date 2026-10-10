@@ -6,7 +6,8 @@ const DEFAULT_CONFIG = {
         startWithWindows: false,
         startMinimized: false,
         minimizeToTray: true,
-        defaultProfile: 'default'
+        defaultProfile: 'default',
+        emulation: 'off'   // 'off' | 'xbox360' | 'ds4' — how the pad appears to games
     },
     profiles: [
         {
@@ -107,6 +108,21 @@ export function useProfiles() {
         });
     };
 
+    const updateMapping = (mappingId, patch) => {
+        setConfig(prev => {
+            const profiles = prev.profiles.map(p => {
+                if (p.id === activeProfileId) {
+                    return {
+                        ...p,
+                        mappings: p.mappings.map(m => m.id === mappingId ? { ...m, ...patch } : m)
+                    };
+                }
+                return p;
+            });
+            return { ...prev, profiles };
+        });
+    };
+
     const toggleMapping = (mappingId) => {
         setConfig(prev => {
             const profiles = prev.profiles.map(p => {
@@ -185,6 +201,7 @@ export function useProfiles() {
         addMapping,
         removeMapping,
         toggleMapping,
+        updateMapping,
         createProfile,
         renameProfile,
         deleteProfile,
