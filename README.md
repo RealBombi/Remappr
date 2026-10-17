@@ -51,7 +51,7 @@ It does not modify any game files, inject into processes, or touch memory. It ju
 ## Installation
 
 1. Go to the [Releases](https://github.com/RealBombi/Remappr/releases) page
-2. Download **Remappr Setup 1.0.0.exe**
+2. Download the latest **Remappr-Setup-x.y.z.exe** (the app updates itself after that)
 3. Run the installer
 
 > **Note:** Windows SmartScreen may show a warning since the app isn't code-signed. Click **"More info"** then **"Run anyway"** to proceed.
