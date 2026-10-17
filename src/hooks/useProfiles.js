@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { loadConfig, saveConfig, sendCommand } from '../utils/ipc';
+import { DEFAULT_DEADZONES } from '../utils/deadzones';
 
 const DEFAULT_CONFIG = {
     settings: {
@@ -7,7 +8,8 @@ const DEFAULT_CONFIG = {
         startMinimized: false,
         minimizeToTray: true,
         defaultProfile: 'default',
-        emulation: 'off'   // 'off' | 'xbox360' | 'ds4' — how the pad appears to games
+        emulation: 'off',  // 'off' | 'xbox360' | 'ds4' — how the pad appears to games
+        deadzones: { ...DEFAULT_DEADZONES }  // applied to the emulated pad
     },
     profiles: [
         {

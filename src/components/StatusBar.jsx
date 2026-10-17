@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Gamepad2, Download, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Gamepad2, Download, RefreshCw, AlertTriangle, SlidersHorizontal } from 'lucide-react';
 import { installDriver } from '../utils/ipc';
 
 // How the pad is presented to Windows / Steam / games.  'off' passes the real
@@ -27,7 +27,7 @@ function emulationBadge(emulation, emulationMode) {
 
 export default function StatusBar({
     isConnected, controllerName, activeButton,
-    emulation, emulationMode, onEmulationChange, onRefreshEmulation
+    emulation, emulationMode, onEmulationChange, onRefreshEmulation, onOpenDeadzones
 }) {
     const [installing, setInstalling] = useState(false);
     const [installError, setInstallError] = useState(null);
@@ -64,26 +64,36 @@ export default function StatusBar({
                     {/* Appears-as selector */}
                     <div className="flex flex-col items-end gap-1">
                         <span className="text-[10px] text-zinc-500 font-semibold tracking-widest uppercase">Appears as</span>
-                        <div className="flex items-center bg-black/40 border border-white/10 rounded-lg p-0.5 gap-0.5">
-                            {EMULATION_OPTIONS.map(opt => {
-                                const selected = emulationMode === opt.value;
-                                return (
-                                    <button
-                                        key={opt.value}
-                                        onClick={() => onEmulationChange(opt.value)}
-                                        aria-pressed={selected}
-                                        title={opt.value === 'off'
-                                            ? 'Pass the real controller through unchanged'
-                                            : `Show the controller to games as a ${opt.label} pad`}
-                                        className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all
-                                            ${selected
-                                                ? 'bg-primary text-white shadow-[0_0_12px_rgba(139,92,246,0.4)]'
-                                                : 'text-zinc-400 hover:text-white hover:bg-white/5'}`}
-                                    >
-                                        {opt.label}
-                                    </button>
-                                );
-                            })}
+                        <div className="flex items-center gap-1.5">
+                            <div className="flex items-center bg-black/40 border border-white/10 rounded-lg p-0.5 gap-0.5">
+                                {EMULATION_OPTIONS.map(opt => {
+                                    const selected = emulationMode === opt.value;
+                                    return (
+                                        <button
+                                            key={opt.value}
+                                            onClick={() => onEmulationChange(opt.value)}
+                                            aria-pressed={selected}
+                                            title={opt.value === 'off'
+                                                ? 'Pass the real controller through unchanged'
+                                                : `Show the controller to games as a ${opt.label} pad`}
+                                            className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all
+                                                ${selected
+                                                    ? 'bg-primary text-white shadow-[0_0_12px_rgba(139,92,246,0.4)]'
+                                                    : 'text-zinc-400 hover:text-white hover:bg-white/5'}`}
+                                        >
+                                            {opt.label}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            <button
+                                onClick={onOpenDeadzones}
+                                title="Stick and trigger deadzones"
+                                aria-label="Deadzones"
+                                className="p-1.5 rounded-lg bg-black/40 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/5 transition-colors"
+                            >
+                                <SlidersHorizontal size={15} />
+                            </button>
                         </div>
                     </div>
 

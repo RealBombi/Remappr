@@ -25,12 +25,19 @@ class PythonBridge {
                 });
             }
 
+            // stdout arrives in arbitrary chunks, so a message can be split
+            // across two of them; keep the unfinished tail for the next chunk.
+            let pending = '';
             this.process.stdout.on('data', (data) => {
-                const messages = data.toString().split('\n').filter(Boolean);
-                messages.forEach(msg => {
+                const lines = (pending + data.toString()).split('\n');
+                pending = lines.pop();
+                lines.filter(Boolean).forEach(msg => {
                     try {
                         const parsed = JSON.parse(msg);
-                        console.log('[Python →]', JSON.stringify(parsed));
+                        // The live stick preview streams ~30 messages a second.
+                        if (parsed.type !== 'stick_state') {
+                            console.log('[Python →]', JSON.stringify(parsed));
+                        }
                         if (this.mainWindow && !this.mainWindow.isDestroyed()) {
                             this.mainWindow.webContents.send('python-event', parsed);
                         }
