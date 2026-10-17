@@ -8,10 +8,12 @@ import ProfileSelector from './components/ProfileSelector';
 import MappingList from './components/MappingList';
 import AddMappingModal from './components/AddMappingModal';
 import SettingsModal from './components/SettingsModal';
+import DeadzoneModal from './components/DeadzoneModal';
 import DisclaimerModal from './components/DisclaimerModal';
 import { Minus, X, AlertTriangle } from 'lucide-react';
 import appLogo from '../assets/remappr_logo_1_1772933761473.png';
-import { minimizeWindow, closeWindow, getAppVersion } from './utils/ipc';
+import { minimizeWindow, closeWindow, getAppVersion, sendCommand } from './utils/ipc';
+import { deadzonesFor } from './utils/deadzones';
 
 function App() {
   const {
@@ -67,8 +69,20 @@ function App() {
 
   const handleEmulationChange = (mode) => updateSettings({ emulation: mode });
 
+  // Same for deadzones.  The modal also pushes values live while a slider is
+  // dragged, ahead of the (debounced) save.
+  const deadzones = deadzonesFor(config.settings);
+  const deadzonesJson = JSON.stringify(deadzones);
+  const sendDeadzones = (dz) => sendCommand({ type: 'set_deadzones', deadzones: dz });
+  useEffect(() => {
+    if (!isLoaded) return;
+    sendDeadzones(deadzones);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoaded, deadzonesJson]);
+
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isDeadzoneModalOpen, setIsDeadzoneModalOpen] = useState(false);
   const [appVersion, setAppVersion] = useState('');
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(
     () => localStorage.getItem('disclaimerAccepted') === 'true'
@@ -128,6 +142,7 @@ function App() {
         emulationMode={savedEmulation}
         onEmulationChange={handleEmulationChange}
         onRefreshEmulation={refreshEmulation}
+        onOpenDeadzones={() => setIsDeadzoneModalOpen(true)}
       />
 
       <ProfileSelector
@@ -172,6 +187,16 @@ function App() {
         settings={config.settings}
         onUpdateSettings={updateSettings}
         appVersion={appVersion}
+      />
+
+      <DeadzoneModal
+        isOpen={isDeadzoneModalOpen}
+        onClose={() => setIsDeadzoneModalOpen(false)}
+        deadzones={deadzones}
+        onChange={sendDeadzones}
+        onSave={(dz) => updateSettings({ deadzones: dz })}
+        emulationMode={savedEmulation}
+        isConnected={isConnected}
       />
 
       {lastError && (

@@ -19,6 +19,7 @@ Remappr is a lightweight Windows app that lets you map controller buttons to key
 - Create multiple profiles for different games or setups
 - Enable/disable individual mappings without deleting them
 - Controller emulation: make a PS4/PS5 pad show up to Steam and games as an Xbox 360 controller (or any pad as a DualShock 4) for games that only accept Xbox input, such as GTA V. Needs the free ViGEmBus driver, which the app offers to install
+- Stick and trigger deadzones for the emulated controller, like Steam's: a radial (circular) stick deadzone with smooth rescaling, adjustable per stick and per trigger, with a live preview of what the stick is doing and what games receive. Fixes drift in any game reading the emulated pad, Steam or not
 - Turbo / hold-to-repeat per mapping: hold a button and the key is tapped on a timer (default 80 ms), with start/end delays, a toggle mode and an interruptable option
 - Works on any keyboard layout: mappings are stored by physical key, so Ø on a Norwegian keyboard reaches the game as the key it expects
 - Runs in the system tray so it stays out of your way

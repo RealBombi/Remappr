@@ -13,11 +13,14 @@ from keyboard_sender import press_key, release_key  # noqa: E402
 from turbo import TurboEngine, read_config as read_turbo_config  # noqa: E402
 from controller import get_controller, rescan_controller  # noqa: E402
 from emulation import VirtualPad, driver_installed, installer_path, MODES as EMULATION_MODES  # noqa: E402
+import deadzone  # noqa: E402
 
 # Global state
 current_mappings = []  # List of {"button": "...", "key": "..."}
 virtual_pad = VirtualPad()       # controller emulation (see emulation.py)
 emulation_mode = "off"           # what the user asked for; may be inactive
+deadzones = deadzone.read_config(None)  # applied to what the virtual pad reports
+stick_preview = False            # stream live stick values to the UI
 is_detecting = False
 is_mapping_active = False
 held_keys = set()
@@ -100,7 +103,7 @@ def stdin_reader(cmd_queue):
     cmd_queue.put(None)  # signal EOF
 
 def main():
-    global current_mappings, is_detecting, is_mapping_active, emulation_mode
+    global current_mappings, is_detecting, is_mapping_active, emulation_mode, deadzones, stick_preview
 
     pygame.init()
 
@@ -113,6 +116,8 @@ def main():
     controller_name = None
     controller_layout = "xbox"   # drives the button labels shown in the UI
     rescan_ticks = 0       # counter for periodic controller re-scan
+    preview_ticks = 0      # throttles stick_state messages to ~30 per second
+    last_preview = None    # last stick_state sent, to skip repeats
 
     def on_disconnect():
         nonlocal poller, controller_name
@@ -210,6 +215,13 @@ def main():
                                 # Plugged in once the real pad shows up.
                                 send_emulation_status()
 
+                    elif cmd_type == "set_deadzones":
+                        deadzones = deadzone.read_config(cmd.get("deadzones"))
+
+                    elif cmd_type == "stick_preview":
+                        stick_preview = bool(cmd.get("enabled"))
+                        last_preview = None
+
                     elif cmd_type == "check_emulation":
                         send_emulation_status()
 
@@ -236,12 +248,27 @@ def main():
             # ── Poll controller ──
             if poller and poller.connected:
                 poller.poll()
-                if virtual_pad.active and poller.connected:
-                    try:
-                        virtual_pad.apply(poller.get_state())
-                    except Exception as e:
-                        virtual_pad.stop()
-                        send_emulation_status(error=f"Emulation stopped: {e}")
+                if (virtual_pad.active or stick_preview) and poller.connected:
+                    raw = poller.get_state()
+                    out = deadzone.apply(raw, deadzones)
+                    if virtual_pad.active:
+                        try:
+                            virtual_pad.apply(out)
+                        except Exception as e:
+                            virtual_pad.stop()
+                            send_emulation_status(error=f"Emulation stopped: {e}")
+                    preview_ticks += 1
+                    if stick_preview and preview_ticks >= 3:
+                        preview_ticks = 0
+                        axes = ("lx", "ly", "rx", "ry", "lt", "rt")
+                        msg = {
+                            "type": "stick_state",
+                            "raw": {k: int(raw.get(k, 0)) for k in axes},
+                            "out": {k: int(out.get(k, 0)) for k in axes},
+                        }
+                        if msg != last_preview:
+                            last_preview = msg
+                            send_message(msg)
             else:
                 # No controller — periodically re-scan (~1 second)
                 rescan_ticks += 1
